@@ -13,28 +13,19 @@ public class ReplacementAlgorithms {
 
 	public static void main(String[] args) {
 		
+		// if no command line arguments available then exit program.
 		if (args.length > 0) {
 			
+			// variable initialization
 			List<Integer> pages = new ArrayList<Integer>();
 			List<Integer> LRUTotal = new ArrayList<Integer>();
 			List<Integer> RandTotal = new ArrayList<Integer>();
 			List<Integer> FIFOTotal = new ArrayList<Integer>();
 			List<Integer> OptimalTotal = new ArrayList<Integer>();
+			int frameCount = Integer.parseInt(args[1]);
 			
-//			pages.add(7);
-//			pages.add(0);
-//			pages.add(1);
-//			pages.add(2);
-//			pages.add(0);
-//			pages.add(3);
-//			pages.add(0);
-//			pages.add(4);
-//			pages.add(2);
-//			pages.add(3);
-//			pages.add(0);
-//			pages.add(7);
-//			pages.add(1);
-			
+			// file (args[0]) parsing to retrieve reference string
+			// and store it into pages list of integers.
 			try
 			{
 				File file = new File(args[0]);
@@ -45,36 +36,25 @@ public class ReplacementAlgorithms {
 					for (int i = 0; i < line.length(); i++){
 						char c = line.charAt(i);
 						if(c == ' ') {
-							//pages.add(Integer.parseInt(data));
+							pages.add(Integer.parseInt(data));
 							data = "";
 						} else
 							data += c;
 					}
-				}
-				 
+				} 
 			} catch (IOException e) {
 				System.out.println("Error accessing input file!");
 			}
-			 
-			for(int i = 1; i <= Integer.parseInt(args[1]); i++) {
-				
-				System.out.println(i + " " + Optimal(pages, i));
-				
-				LRUTotal.add(LRU(pages, i));
-				RandTotal.add(RandomReplacement(pages, i));
-				FIFOTotal.add(FIFO(pages, i));
-				OptimalTotal.add(Optimal(pages, i));
-				
-				System.out.println(i + ") FIFO Average: \t" + DisplayAverage(FIFOTotal));
-				System.out.println(i + ") Optimal Avg: \t" + DisplayAverage(OptimalTotal));
-				System.out.println(i + ") Rand Average: \t" + DisplayAverage(RandTotal));
-				System.out.println(i + ") LRU Average: \t" + DisplayAverage(LRUTotal));
-				
-				System.out.println();
-			}
+			
+			// Display output, number of frames and which average of each algorithm
+			System.out.println("Frames (" + frameCount + ") FIFO Average: " + FIFO(pages, frameCount)/frameCount);
+			System.out.println("Frames (" + frameCount + ") Optimal Avg : " + Optimal(pages, frameCount)/frameCount);
+			System.out.println("Frames (" + frameCount + ") Rand Average: " + RandomReplacement(pages, frameCount)/frameCount);
+			System.out.println("Frames (" + frameCount + ") LRU Average : " + LRU(pages, frameCount)/frameCount);
 		}
-	}
-	
+	} // end of main
+
+	/**** ALGORITHMS ****/
 	
 	/*
 	 * 	Method: LRU
@@ -113,16 +93,15 @@ public class ReplacementAlgorithms {
 		return faultCount;
 	}
 	
-	
 	/*
 	 * 	Method: RandomReplacement
 	 * 	Parameters: List<Integers> pages, int frameCount
 	 * 	Return: int faultCount
 	 * 	Design: This method is supposed to count the number of page
 	 * 	faults of a given reference string using an algorithm that
-	 *  randomly selects the a frame and replaces the reference 
-	 *  string value with the value of the current reference string
-	 *  that just caused a page fault. 
+	 *  	randomly selects the a frame and replaces the reference 
+	 *  	string value with the value of the current reference string
+	 *  	that just caused a page fault. 
 	 */
 	public static int RandomReplacement(List<Integer> pages, int frameCount) {
 		int faultCount = 0;
@@ -155,9 +134,9 @@ public class ReplacementAlgorithms {
 	 * 	faults of a given reference string using the 
 	 * 	first-in-first-out (FIFO) algorithm. The FIFO algorithm is 
 	 * 	supposed to compare each value of it's reference string to 
-	 *  what's currently in memory. If there are no matches, a page 
-	 *  fault will occur (which this algorithm should catch) and the  
-	 *  contents of the frame containing the reference string which
+	 *  	what's currently in memory. If there are no matches, a page 
+	 *  	fault will occur (which this algorithm should catch) and the  
+	 *  	contents of the frame containing the reference string which
 	 * 	caused the earliest page fault.
 	 */
 	public static int FIFO(List<Integer> pages, int frameCount) {
@@ -191,12 +170,12 @@ public class ReplacementAlgorithms {
 	 * 	Design: This method is supposed to count the number of page
 	 * 	faults of a given reference string using the Optimal 
 	 * 	algorithm. The Optimal algorithm is supposed to compare each 
-	 *  value of it's reference string to what's currently in memory. 
-	 *  If there are no matches, a fault will occur (which this 
-	 *  algorithm should catch) and the contents of the frame 
-	 *  containing the value that matches the last used value of the
-	 *  reference string will be replaced with the current value of
-	 *  the reference string.
+	 *  	value of it's reference string to what's currently in memory. 
+	 *  	If there are no matches, a fault will occur (which this 
+	 *  	algorithm should catch) and the contents of the frame 
+	 *  	containing the value that matches the last used value of the
+	 *  	reference string will be replaced with the current value of
+	 *  	the reference string.
 	 */
 	public static int Optimal(List<Integer> pages, int frameCount) {
 		int faultCount = 0;
@@ -230,21 +209,5 @@ public class ReplacementAlgorithms {
 			}
 		}
 		return faultCount;
-	}
-	
-	/*
-	 * 	Method: DisplayAverage
-	 * 	Parameter: List<Integer> total
-	 * 	Retrun: sum/total.size()
-	 * 	Design: This method is design to add up the contents
-	 * 	of the list and then return the total divided by the
-	 * 	size of the list (getting the average).
-	 */
-	public static int DisplayAverage(List<Integer> total) {
-		int sum = 0;
-		for(Integer x : total)
-			sum += x;
-		a
-		return sum/total.size();
 	}
 }
