@@ -21,6 +21,10 @@ public class ReplacementAlgorithms {
 		if (args.length > 0) {
 			
 			List<Integer> pages = new ArrayList<Integer>();
+			List<Integer> LRUTotal = new ArrayList<Integer>();
+			List<Integer> RandTotal = new ArrayList<Integer>();
+			List<Integer> FIFOTotal = new ArrayList<Integer>();
+			List<Integer> OptimalTotal = new ArrayList<Integer>();
 			
 			try
 			{
@@ -44,22 +48,23 @@ public class ReplacementAlgorithms {
 			}
 			 
 			for(int i = 1; i <= Integer.parseInt(args[1]); i++) {
-				int faults = LRU(pages, i, 0);
-				System.out.println(i + "\t" + faults);
+				LRUTotal.add(LRU(pages, i));
+				RandTotal.add(RandomReplacement(pages, i));
+				FIFOTotal.add(FIFO(pages, i));
+				OptimalTotal.add(Optimal(pages, i));
 				
-				faults = RandomReplacement(pages, i, 0);
-				System.out.println(i + "\t" + faults);
+				System.out.println(i + ") LRU Average: \t" + DisplayAverage(LRUTotal));
+				System.out.println(i + ") Rand Average: \t" + DisplayAverage(RandTotal));
+				System.out.println(i + ") FIFO Average: \t" + DisplayAverage(FIFOTotal));
+				System.out.println(i + ") Optimal Avg: \t" + DisplayAverage(OptimalTotal));
 				
-				faults = FIFO(pages, i, 0);
-				System.out.println(i + "\t" + faults);
-				
-				faults = Optimal(pages, i, 0);
-				System.out.println(i + "\t" + faults);
+				System.out.println();
 			}
 		}
 	}
 	
-	public static int LRU(List<Integer> pages, int frameCount, int faultCount) {
+	public static int LRU(List<Integer> pages, int frameCount) {
+		int faultCount = 0;
 		Queue<Integer> frames = new LinkedList<Integer>();
 		boolean faultOccurs = true;
 		
@@ -81,7 +86,8 @@ public class ReplacementAlgorithms {
 		return faultCount;
 	}
 	
-	public static int RandomReplacement(List<Integer> pages, int frameCount, int faultCount) {
+	public static int RandomReplacement(List<Integer> pages, int frameCount) {
+		int faultCount = 0;
 		int[] frames = new int[frameCount];
 		boolean faultOccurs = true;
 		Random rand = new Random();
@@ -103,7 +109,8 @@ public class ReplacementAlgorithms {
 		return faultCount;
 	}
 	
-	public static int FIFO(List<Integer> pages, int frameCount, int faultCount) {
+	public static int FIFO(List<Integer> pages, int frameCount) {
+		int faultCount = 0;
 		Queue<Integer> frames = new LinkedList<Integer>();
 		boolean faultOccurs = true;
 		
@@ -126,13 +133,16 @@ public class ReplacementAlgorithms {
 		return faultCount;
 	}
 	
-	public static int Optimal(List<Integer> pages, int frameCount, int faultCount) {
+	public static int Optimal(List<Integer> pages, int frameCount) {
+		int faultCount = 0;
 		int[] frames = new int[frameCount];
+		List<Integer> copyFrames = new ArrayList<Integer>();
 		boolean faultOccurs = true;
 		
 		for(int i = 0; i < pages.size(); i++) {
 			if(i < frameCount) {
 				frames[i] = pages.get(i);
+				copyFrames.add(pages.get(i));
 				faultCount++;
 			} else {
 				for(Integer frameContents : frames)
@@ -140,25 +150,28 @@ public class ReplacementAlgorithms {
 				
 				if(faultOccurs) {
 					faultCount++;
-					int optimalFound = 0;
 					int j = i;
-					int currentOptimal = 0;
-					while(optimalFound < frameCount && j < pages.size()) {
-						for (int k = 0; k < frames.length; k++) {
-							if (pages.get(j) == frames[k]) {
-								optimalFound++;
-								currentOptimal = frames[k];
-							}
-						}
+					while(copyFrames.size() != 1 && j < pages.size()) {
+						for (int k = 0; k < copyFrames.size(); k++) 
+							if (pages.get(j) == copyFrames.get(k)) 
+								copyFrames.remove(k);
 						j++;
 					}
 					for(int k = 0; k < frames.length; k++)
-						if(currentOptimal == frames[k])
+						if(copyFrames.get(0) == frames[k])
 							frames[k] = pages.get(i);
 				}
 				faultOccurs = true;
 			}
 		}
 		return faultCount;
+	}
+	
+	public static int DisplayAverage(List<Integer> total) {
+		int sum = 0;
+		for(Integer x : total)
+			sum += x;
+		
+		return sum/total.size();
 	}
 }
