@@ -18,10 +18,6 @@ public class ReplacementAlgorithms {
 			
 			// variable initialization
 			List<Integer> pages = new ArrayList<Integer>();
-			List<Integer> LRUTotal = new ArrayList<Integer>();
-			List<Integer> RandTotal = new ArrayList<Integer>();
-			List<Integer> FIFOTotal = new ArrayList<Integer>();
-			List<Integer> OptimalTotal = new ArrayList<Integer>();
 			int frameCount = Integer.parseInt(args[1]);
 			
 			// file (args[0]) parsing to retrieve reference string
