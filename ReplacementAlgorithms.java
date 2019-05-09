@@ -127,7 +127,7 @@ public class ReplacementAlgorithms {
 	}
 	
 	/*
-	 * 	Method: LRU
+	 * 	Method: FIFO
 	 * 	Parameters: List<Integers> pages, int frameCount
 	 * 	Return: int faultCount
 	 * 	Design: This method is supposed to count the number of page
