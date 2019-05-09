@@ -1,0 +1,242 @@
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.*;
+
+import static java.lang.Integer.parseInt;
+
+public class test {
+
+    public static void main(String [] args){
+
+        if(args.length < 1)
+            return;
+
+        int numFrames = parseInt(args[1]);
+
+        ArrayList<ArrayList<Integer>> refStrings = new ArrayList<>();
+
+        try
+        {
+            File file = new File(args[0]);
+            Scanner scnr = new Scanner(file);
+
+            String line;
+            String[] splitLine;
+            ArrayList<Integer> refString;
+
+            while(scnr.hasNextLine()){
+                line =  scnr.nextLine();
+                splitLine = line.split(" ");
+                refString = new ArrayList<>();
+                for(String s: splitLine)
+                    refString.add(parseInt(s));
+                refStrings.add(refString);
+            }
+        } catch (IOException e) { System.out.println("Error accessing input file!"); }
+
+        System.out.println("\tAverage number of page faults with " + numFrames + " frames");
+        System.out.println("\t-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-");
+        System.out.println("\tAlgorithm  |  Average page faults across reference strings");
+        System.out.println("\t---------  |  --------------------------------------------");
+
+        int total = 0;
+        for(ArrayList<Integer> refString : refStrings)
+            total += FIFO(refString, numFrames);
+        System.out.println("\tFIFO       |  " + "    " + total/refStrings.size());
+
+        total = 0;
+        for(ArrayList<Integer> refString : refStrings)
+            total += LRU(refString, numFrames);
+        System.out.println("\tLRU        |  " + "    " + total/refStrings.size());
+
+        total = 0;
+        for(ArrayList<Integer> refString : refStrings)
+            total += Random(refString, numFrames);
+        System.out.println("\tRandom     |  " + "    " + total/refStrings.size());
+
+        total = 0;
+        for(ArrayList<Integer> refString : refStrings)
+            total += Optimal(refString, numFrames);
+        System.out.println("\tOptimal    |  " + "    " + total/refStrings.size());
+
+        int[] xAxis = new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        int[][] algData = new int[4][10];
+
+        for(numFrames = 1; numFrames <= 10; numFrames++){
+            for(ArrayList<Integer> refString : refStrings) {
+                algData[0][numFrames - 1] += FIFO(refString, numFrames);
+                algData[1][numFrames - 1] += LRU(refString, numFrames);
+                algData[2][numFrames - 1] += Random(refString, numFrames);
+                algData[3][numFrames - 1] += Optimal(refString, numFrames);
+            }
+            algData[0][numFrames-1] /= refStrings.size();
+            algData[1][numFrames-1] /= refStrings.size();
+            algData[2][numFrames-1] /= refStrings.size();
+            algData[3][numFrames-1] /= refStrings.size();
+        }
+
+        /* Put graph code here
+        It is the x axis array against the y access for the other four algorithms!
+         */
+
+//        for(int i = 0; i < algData.length; i++){
+//            for(int j = 0; j < 9 ; j++)
+//                StdDraw.line(xAxis[j], algData[i][j], xAxis[j+1], algData[i][j+1]);
+//        }
+    }
+
+    public static int FIFO(ArrayList<Integer> refString, int frameCount){
+        int faultCount = 0;
+        Queue<Integer> frames = new LinkedList<>();
+        HashSet<Integer> withinFrame = new HashSet<>();
+        for(Integer page: refString){
+//            System.out.println(frames);
+            if(withinFrame.contains(page))
+               continue;
+
+            faultCount++;
+            if(frames.size() == frameCount)
+                withinFrame.remove(frames.remove());
+
+            frames.add(page);
+            withinFrame.add(page);
+
+        }
+
+        return faultCount;
+    }
+
+    public static int LRU(ArrayList<Integer> refString, int frameCount){
+        int faultCount = 0;
+        Deque<Integer> frames = new LinkedList<>();
+        HashSet<Integer> withinFrame = new HashSet<>();
+        for(Integer page: refString){
+            if(withinFrame.contains(page))
+                frames.remove(page);
+
+
+            else {
+                faultCount++;
+
+                if (frames.size() == frameCount) {
+                    int leastRecentlyUsed = frames.removeLast();
+                    withinFrame.remove(leastRecentlyUsed);
+                }
+            }
+
+            withinFrame.add(page);
+            frames.push(page);
+
+
+
+
+        }
+
+        return faultCount;
+    }
+
+    public static int Random(ArrayList<Integer> refString, int frameCount) {
+        int faultCount = 0;
+        int[] frames = new int[frameCount];
+        Random rand = new Random();
+        HashSet<Integer> withinFrame = new HashSet<>();
+
+        int i = 0;
+        for (Integer page : refString) {
+            if (withinFrame.contains(page))
+                continue;
+
+            faultCount++;
+            withinFrame.add(page);
+
+            if (i == frameCount -1){
+                int toRemoveIndex = rand.nextInt(frameCount);
+                int toRemove = frames[toRemoveIndex];
+                frames[toRemoveIndex] = page;
+                withinFrame.remove(toRemove);
+            }
+
+            else{
+                frames[i] = page;
+                i++;
+            }
+
+
+
+        }
+
+        return faultCount;
+
+    }
+
+    public static int Optimal(ArrayList<Integer> refString, int frameCount){
+
+        int faultCount = 0;
+
+        PriorityQueue<OptimalNode> frames = new PriorityQueue<>(Collections.reverseOrder());
+        HashSet<Integer> withinFrame = new HashSet<>();
+        HashMap<Integer, ArrayList<Integer>> allIndices = new HashMap<>();
+        ArrayList<Integer> indices;
+
+        int index;
+        for(int i = 0; i< refString.size(); i++){
+            for(int j = i; j< refString.size(); j++){
+                if(refString.get(i) == refString.get(j) && i != j){
+                    if(allIndices.containsKey(refString.get(i)))
+                        indices = allIndices.get(refString.get(i));
+                    else
+                        indices = new ArrayList<>();
+                    indices.add(j);
+                    allIndices.put(refString.get(i), indices);
+                }
+            }
+        }
+
+
+        for(Integer page : refString){
+//            for(OptimalNode frame : frames)
+//                System.out.print("[" + frame.getPage() + ", " + frame.getNextIndex() + "]");
+//            System.out.println();
+
+            if(allIndices.containsKey(page)) { // need to find the next index at which this page appears next
+                indices = allIndices.get(page);
+                index = indices.remove(0); // we will use this to set the value for the priority queue
+                if(indices.isEmpty())
+                    allIndices.remove(page); // if there are no more appearances of this value, take it out of the hash map!
+            }
+            else
+                index = Integer.MAX_VALUE; // we want it to always lose against any other possible value
+
+            if(withinFrame.contains(page)) { // if the page is already in the frame, update the next index!
+                for(OptimalNode frame : frames){
+                    if(frame.getPage() == page)
+                        frame.setNextIndex(index);
+                }
+                continue;
+            }
+
+            // if the page is in the frame
+            faultCount++; // increment fault counter
+
+            if(frames.size() == frameCount){ // need to remove a page!
+                int toRemove = frames.remove().getPage(); // remove the OptimalNode from the priority queue and return the page with the lowest priority!
+
+                // remove from frame and hash set
+                frames.remove(toRemove);
+                withinFrame.remove(toRemove);
+            }
+
+            // finally we can add the frame
+            frames.add(new OptimalNode(page, index));
+            withinFrame.add(page);
+
+        }
+
+        return faultCount;
+    }
+
+
+
+
+}
