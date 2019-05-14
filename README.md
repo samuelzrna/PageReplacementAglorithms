@@ -15,5 +15,5 @@ It’s important to note that when running this program to follow this format fo
 
 ### Learning Objectives
 * Understand how to implement the FIFO, Optimal, Random and LRU page replacement algorithms.
-* Open and parse through .dat file
-* Use command line arguments
+* Open and parse through .dat file.
+* Use command line arguments.
